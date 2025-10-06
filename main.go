@@ -1,46 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-	"sync/atomic"
+
+	"github.com/Coddyum/chirpy/handler"
 )
-
-type apiConfig struct {
-	fileserverHits atomic.Int32
-}
-
-// Incremente le hits x qu'un user var sur la main page (/app)
-func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cfg.fileserverHits.Add(1)
-		next.ServeHTTP(w, r)
-	})
-}
-
-// Affiche le count du nombre de hits
-func (cfg *apiConfig) metricsHandler(w http.ResponseWriter, r *http.Request) {
-	count := cfg.fileserverHits.Load()
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.Write([]byte(fmt.Sprintf("Hits: %d", count)))
-}
-
-// Reset le compteur de visite
-func (cfg *apiConfig) resetMetricHandler(w http.ResponseWriter, r *http.Request) {
-	count := cfg.fileserverHits.Load()
-	cfg.fileserverHits.CompareAndSwap(count, 0)
-}
-
-// Affiche le status de notre app
-func readlinessHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
-}
 
 func main() {
 	mux := http.NewServeMux()
-	apiCfg := &apiConfig{}
+	apiCfg := &handler.ApiConfig{}
 
 	srv := &http.Server{
 		Addr:    ":8080",
@@ -49,15 +17,18 @@ func main() {
 
 	fileServer := http.FileServer(http.Dir("."))
 
-	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app/", fileServer)))
+	mux.Handle("/app/", apiCfg.MiddlewareMetricsInc(http.StripPrefix("/app/", fileServer)))
 	mux.Handle("/assets", fileServer)
 
 	// Metric
-	mux.HandleFunc("/metrics", apiCfg.metricsHandler)
-	mux.HandleFunc("/reset", apiCfg.resetMetricHandler)
+	mux.HandleFunc("GET /admin/metrics", apiCfg.MetricsHandler)
+	mux.HandleFunc("POST /admin/reset", apiCfg.ResetMetricHandler)
 
 	// Status off app health
-	mux.HandleFunc("/healthz", readlinessHandler)
+	mux.HandleFunc("GET /api/healthz", handler.ReadlinessHandler)
+
+	// Json
+	mux.HandleFunc("POST /api/validate_chirp", handler.ValidatedChirp)
 
 	srv.ListenAndServe()
 }
