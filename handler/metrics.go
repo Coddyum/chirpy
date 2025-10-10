@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"net/http"
 	"sync/atomic"
+
+	"github.com/Coddyum/chirpy/internal/database"
 )
 
 type ApiConfig struct {
 	fileserverHits atomic.Int32
+	DB             *database.Queries
+	Platform       string
 }
 
 func (cfg *ApiConfig) MiddlewareMetricsInc(next http.Handler) http.Handler {
@@ -32,6 +36,22 @@ func (cfg *ApiConfig) MetricsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Reset le compteur de visite
 func (cfg *ApiConfig) ResetMetricHandler(w http.ResponseWriter, r *http.Request) {
+	if cfg.Platform != "dev" {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	// reset les metrics avant la suppression
 	count := cfg.fileserverHits.Load()
 	cfg.fileserverHits.CompareAndSwap(count, 0)
+
+	err := cfg.DB.DeleteAllUsers(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to delete all users", http.StatusInternalServerError)
+		return
+	}
+
+	// confirmation
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("All users deleted successfully"))
 }

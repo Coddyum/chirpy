@@ -1,15 +1,43 @@
 package main
 
 import (
+	"database/sql"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/Coddyum/chirpy/handler"
+	"github.com/Coddyum/chirpy/internal/database"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func main() {
-	mux := http.NewServeMux()
-	apiCfg := &handler.ApiConfig{}
+	// Load .env fils
+	godotenv.Load()
 
+	// Create the http server
+	mux := http.NewServeMux()
+
+	// Get the db url from .env fils
+	dbURL := os.Getenv("DB_URL")
+	platform := os.Getenv("PLATFORM")
+
+	// Open the sql db from the url
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal("Error when openning sql db")
+		return
+	}
+
+	dbQueries := database.New(db)
+
+	apiCfg := &handler.ApiConfig{
+		DB:       dbQueries,
+		Platform: platform,
+	}
+
+	// this is for listen http server
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,
@@ -28,7 +56,11 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", handler.ReadlinessHandler)
 
 	// Json
-	mux.HandleFunc("POST /api/validate_chirp", handler.ValidatedChirp)
+	// mux.HandleFunc("POST /api/validate_chirp", handler.ValidatedChirp)
+
+	// Users
+	mux.HandleFunc("POST /api/users", apiCfg.CreateUserHandler)
+	mux.HandleFunc("POST /api/chirps", apiCfg.CreateChirps)
 
 	srv.ListenAndServe()
 }
