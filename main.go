@@ -61,6 +61,7 @@ func main() {
 	// Users
 	mux.HandleFunc("POST /api/users", apiCfg.CreateUserHandler)
 	mux.HandleFunc("POST /api/chirps", apiCfg.CreateChirps)
+	mux.HandleFunc("GET /api/chirps", apiCfg.HandlerSelectAllChirps)
 
 	srv.ListenAndServe()
 }
