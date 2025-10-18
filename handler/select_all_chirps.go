@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type chrips struct {
+type Chrips struct {
 	Id        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -24,11 +24,11 @@ func (cfg *ApiConfig) HandlerSelectAllChirps(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var data []chrips
+	var data []Chrips
 
 	for _, c := range chrip {
 		data = append(data,
-			chrips{
+			Chrips{
 				Id:        c.ID,
 				CreatedAt: c.CreatedAt,
 				UpdatedAt: c.UpdatedAt,
