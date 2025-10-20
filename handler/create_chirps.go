@@ -7,14 +7,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Coddyum/chirpy/internal/auth"
 	"github.com/Coddyum/chirpy/internal/database"
 	"github.com/Coddyum/chirpy/internal/utils"
 	"github.com/google/uuid"
 )
 
 type parameters struct {
-	Body   string `json:"body"`
-	UserId string `json:"user_id"`
+	Body string `json:"body"`
 }
 
 type errorResponse struct {
@@ -39,27 +39,46 @@ func (cfg *ApiConfig) CreateChirps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Step 1: on récupère le bearer Token dans le Authorization du header.
+	token, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		log.Printf("Impossible de récupérer le bearerToken : %s", err)
+		return
+	}
+
+	// Step 2: On vérifie le que le token est bien valid
+	userID, err := auth.ValidateJWT(token, cfg.JWTSecret)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Step 4: je commence a vérifié que les chirp sont valid avec la length
 	if len(params.Body) > 140 {
 		utils.WriteJson(w, 400, errorResponse{Error: "Chirp is too long"})
 		return
 	}
 
+	// Step 5: je m'assure que le chirp ne contient pas de contenu interdu
 	data := cleanBodyString(params.Body)
+
+	// Step 6: je crée le chirp et je l'ajoute a la base de donner
 	chirp, err := cfg.DB.CreateChirp(r.Context(), database.CreateChirpParams{
 		Body:   data,
-		UserID: uuid.NullUUID{UUID: uuid.MustParse(params.UserId), Valid: true},
+		UserID: uuid.NullUUID{UUID: userID, Valid: true},
 	})
 	if err != nil {
 		utils.WriteJson(w, 500, errorResponse{Error: "Failed to create chirp"})
 		return
 	}
 
+	// Step 7: j'écrie la réponse a envoyer au user !
 	utils.WriteJson(w, 201, cleanedBody{
 		Id:        chirp.ID,
 		CreatedAt: chirp.CreatedAt,
 		UpdatedAt: chirp.UpdatedAt,
 		Body:      chirp.Body,
-		UserId:    params.UserId,
+		UserId:    userID.String(),
 	})
 
 }

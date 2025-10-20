@@ -13,8 +13,7 @@ type CustomClaims struct {
 }
 
 func MakeJWT(userID uuid.UUID, tokenSecret string, expriresIn time.Duration) (string, error) {
-
-	claims := CustomClaims{
+	claims := &CustomClaims{
 		jwt.RegisteredClaims{
 			Issuer:    "chirpy",
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
@@ -35,6 +34,7 @@ func MakeJWT(userID uuid.UUID, tokenSecret string, expriresIn time.Duration) (st
 }
 
 func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
+
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (any, error) {
 		return []byte(tokenSecret), nil
 	}, jwt.WithLeeway(5*time.Second))

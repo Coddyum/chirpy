@@ -43,10 +43,25 @@ func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	checkPassword, err := auth.CheckPasswordHash(params.Password, user.HashedPassword)
-	log.Printf("checkPassword: %v, err: %v", checkPassword, err)
+	//log.Printf("checkPassword: %v, err: %v", checkPassword, err)
 	if err != nil {
 		log.Printf("Error checking password: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var expiresIn int
+	if params.ExpiresInSeconds <= 0 {
+		expiresIn = 3600 // Max expiration time ( 1H )
+	} else if params.ExpiresInSeconds > 3600 {
+		expiresIn = 3600
+	} else {
+		expiresIn = params.ExpiresInSeconds
+	}
+
+	createJWT, err := auth.MakeJWT(user.ID, cfg.JWTSecret, time.Duration(expiresIn)*time.Second)
+	if err != nil {
+		log.Printf("Error create jwt: %s", err)
 		return
 	}
 
@@ -60,6 +75,7 @@ func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 		Email:     user.Email,
+		Token:     createJWT,
 	})
 
 }
