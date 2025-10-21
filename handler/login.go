@@ -18,11 +18,12 @@ type LoginUser struct {
 }
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Email     string    `json:"email"`
-	Token     string    `json:"token"`
+	ID           uuid.UUID `json:"id"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	Email        string    `json:"email"`
+	Token        string    `json:"token"`
+	RefreshToken string    `json:"refresh_token"`
 }
 
 func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -43,13 +44,14 @@ func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	checkPassword, err := auth.CheckPasswordHash(params.Password, user.HashedPassword)
-	//log.Printf("checkPassword: %v, err: %v", checkPassword, err)
 	if err != nil {
 		log.Printf("Error checking password: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
+
+	// Fix the expiration at 1H
 	var expiresIn int
 	if params.ExpiresInSeconds <= 0 {
 		expiresIn = 3600 // Max expiration time ( 1H )
@@ -65,6 +67,8 @@ func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
+
 	if !checkPassword {
 		w.WriteHeader(401)
 		return
@@ -76,6 +80,7 @@ func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt: user.UpdatedAt,
 		Email:     user.Email,
 		Token:     createJWT,
+		RefreshToken: ,
 	})
 
 }
