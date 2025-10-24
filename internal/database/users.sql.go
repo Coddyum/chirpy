@@ -20,7 +20,7 @@ VALUES (
   $1,
   $2
 )
-RETURNING id, created_at, updated_at, email, hashed_password, token
+RETURNING id, created_at, updated_at, email, hashed_password, token, refresh_token
 `
 
 type CreateUserParams struct {
@@ -38,6 +38,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Email,
 		&i.HashedPassword,
 		&i.Token,
+		&i.RefreshToken,
 	)
 	return i, err
 }
@@ -52,7 +53,7 @@ func (q *Queries) DeleteAllUsers(ctx context.Context) error {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, created_at, updated_at, email, hashed_password, token FROM users WHERE email = $1
+SELECT id, created_at, updated_at, email, hashed_password, token, refresh_token FROM users WHERE email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -65,12 +66,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Email,
 		&i.HashedPassword,
 		&i.Token,
+		&i.RefreshToken,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, created_at, updated_at, email, hashed_password, token FROM users WHERE id = $1
+SELECT id, created_at, updated_at, email, hashed_password, token, refresh_token FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
@@ -83,6 +85,26 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Email,
 		&i.HashedPassword,
 		&i.Token,
+		&i.RefreshToken,
+	)
+	return i, err
+}
+
+const getUserFromRefreshToken = `-- name: GetUserFromRefreshToken :one
+SELECT id, created_at, updated_at, email, hashed_password, token, refresh_token FROM users Where refresh_token = $1
+`
+
+func (q *Queries) GetUserFromRefreshToken(ctx context.Context, refreshToken string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserFromRefreshToken, refreshToken)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Email,
+		&i.HashedPassword,
+		&i.Token,
+		&i.RefreshToken,
 	)
 	return i, err
 }

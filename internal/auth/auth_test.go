@@ -2,7 +2,6 @@ package auth
 
 import (
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -11,7 +10,7 @@ func TestMakeAndValidateJWT(t *testing.T) {
 	secret := "supersecret"
 	userID := uuid.New()
 
-	token, err := MakeJWT(userID, secret, time.Minute)
+	token, err := MakeJWT(userID, secret)
 	if err != nil {
 		t.Fatalf("failed to make jwt: %v", err)
 	}
@@ -30,7 +29,7 @@ func TestExpiredJWT(t *testing.T) {
 	secret := "supersecret"
 	userID := uuid.New()
 
-	token, err := MakeJWT(userID, secret, -time.Second)
+	token, err := MakeJWT(userID, secret)
 	if err != nil {
 		t.Fatalf("failed to make jwt: %v", err)
 	}
@@ -43,7 +42,7 @@ func TestExpiredJWT(t *testing.T) {
 
 func TestInvalidSecretJWT(t *testing.T) {
 	userID := uuid.New()
-	token, err := MakeJWT(userID, "secret1", time.Minute)
+	token, err := MakeJWT(userID, "secret1")
 	if err != nil {
 		t.Fatalf("failed to make jwt: %v", err)
 	}

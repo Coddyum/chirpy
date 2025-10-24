@@ -12,12 +12,14 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-func MakeJWT(userID uuid.UUID, tokenSecret string, expriresIn time.Duration) (string, error) {
+func MakeJWT(userID uuid.UUID, tokenSecret string) (string, error) {
+	expriesIn := time.Duration(3600) * time.Second // time limite 1H
+
 	claims := &CustomClaims{
 		jwt.RegisteredClaims{
 			Issuer:    "chirpy",
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(expriresIn)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(expriesIn)),
 			Subject:   userID.String(),
 		},
 	}

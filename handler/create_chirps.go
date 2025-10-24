@@ -42,13 +42,14 @@ func (cfg *ApiConfig) CreateChirps(w http.ResponseWriter, r *http.Request) {
 	// Step 1: on récupère le bearer Token dans le Authorization du header.
 	token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
-		log.Printf("Impossible de récupérer le bearerToken : %s", err)
+		log.Printf("(create_chirps L.45) Impossible de récupérer le bearerToken : %s", err)
 		return
 	}
 
 	// Step 2: On vérifie le que le token est bien valid
 	userID, err := auth.ValidateJWT(token, cfg.JWTSecret)
 	if err != nil {
+		log.Printf("(Create_Chirps L.52)Le token n'est pas valid %s", err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -68,6 +69,7 @@ func (cfg *ApiConfig) CreateChirps(w http.ResponseWriter, r *http.Request) {
 		UserID: uuid.NullUUID{UUID: userID, Valid: true},
 	})
 	if err != nil {
+		log.Printf("(Create_Chrips L.72) Impossible de crée le chirp %s", err)
 		utils.WriteJson(w, 500, errorResponse{Error: "Failed to create chirp"})
 		return
 	}
