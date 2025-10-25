@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -13,9 +14,8 @@ import (
 )
 
 type LoginUser struct {
-	Password         string `json:"password"`
-	Email            string `json:"email"`
-	ExpiresInSeconds int    `json:"expires_in_seconds"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
 type User struct {
@@ -79,14 +79,14 @@ func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ajoue des information du refreshToken a la db
 	valid_util := time.Now().AddDate(0, 0, 60)
-	refreshTokenDB, err := cfg.DB.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
-		ExpiresAt: valid_util,
+	_, errCreateDB := cfg.DB.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
+		ExpiresAt: sql.NullTime{Time: valid_util, Valid: true},
 		Token:     newRefreshToken,
+		UserID:    uuid.NullUUID{UUID: user.ID, Valid: true},
 	})
-	if err != nil {
-		log.Printf("Error lors de l'ajoue des info de validité du refreshToken a la base de donner %s", err)
+	if errCreateDB != nil {
+		log.Printf("Impossible d'ajouter le nouveau refreshToken a la base de donné : %s", err)
 		return
 	}
 
@@ -100,10 +100,4 @@ func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		RefreshToken: newRefreshToken,
 	})
 
-	// Information sur le refresh token
-	utils.WriteJson(w, 200, Refresh{
-		ExpiresAt: refreshTokenDB.ExpiresAt.String(),
-		RevokedAt: refreshTokenDB.RevokedAt.Time.String(),
-		Token:     refreshTokenDB.Token,
-	})
 }

@@ -49,7 +49,7 @@ func (cfg *ApiConfig) CreateChirps(w http.ResponseWriter, r *http.Request) {
 	// Step 2: On vérifie le que le token est bien valid
 	userID, err := auth.ValidateJWT(token, cfg.JWTSecret)
 	if err != nil {
-		log.Printf("(Create_Chirps L.52)Le token n'est pas valid %s", err)
+		log.Printf("(Create_Chirps L.52) Le token n'est pas valid %s", err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

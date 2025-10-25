@@ -17,6 +17,7 @@ func GetBearerToken(headers http.Header) (string, error) {
 		if token == "" {
 			return "", fmt.Errorf("empty bearer token")
 		}
+
 		return token, nil
 	}
 

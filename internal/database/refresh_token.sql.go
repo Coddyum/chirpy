@@ -9,21 +9,24 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const createRefreshToken = `-- name: CreateRefreshToken :one
-INSERT INTO refresh_tokens (expires_at, token)
-VALUES ($1, $2)
+INSERT INTO refresh_tokens (expires_at, token, user_id)
+VALUES ($1, $2, $3)
 RETURNING token, created_at, updated_at, user_id, expires_at, revoked_at
 `
 
 type CreateRefreshTokenParams struct {
-	ExpiresAt time.Time
+	ExpiresAt sql.NullTime
 	Token     string
+	UserID    uuid.NullUUID
 }
 
 func (q *Queries) CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error) {
-	row := q.db.QueryRowContext(ctx, createRefreshToken, arg.ExpiresAt, arg.Token)
+	row := q.db.QueryRowContext(ctx, createRefreshToken, arg.ExpiresAt, arg.Token, arg.UserID)
 	var i RefreshToken
 	err := row.Scan(
 		&i.Token,

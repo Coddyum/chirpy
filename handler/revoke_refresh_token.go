@@ -11,35 +11,25 @@ import (
 )
 
 func (cfg *ApiConfig) RevokeRefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
-	headerToken, err := auth.GetBearerToken(r.Header)
+	token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
-		log.Printf("Impossible de récupérer le refreshToken dans le header: %s", err)
+		log.Printf("Impossible de récupérer le token %s", err)
 		return
 	}
 
-	existingToken, err := cfg.DB.GetRefreshTokenInfo(r.Context(), headerToken)
+	existingToken, err := cfg.DB.GetRefreshTokenInfo(r.Context(), token)
 	if err != nil {
-		log.Printf("Impossible de récupérer les informations du token: %s", err)
+		log.Printf("Impossible de récupérer le token ou alors le token n'existe pas dans la db: %s", err)
 		return
 	}
-
-	if existingToken.Token != headerToken {
-		log.Println("Le token passer dans le header n'est pas equale a celui de la db")
-		return
-	}
-
-	now := time.Now()
 
 	err = cfg.DB.UpdateRefreshToken(r.Context(), database.UpdateRefreshTokenParams{
-		Token:     headerToken,
-		UpdatedAt: now,
-		RevokedAt: sql.NullTime{
-			Time:  now,
-			Valid: true,
-		},
+		Token:     existingToken.Token,
+		UpdatedAt: time.Now(),
+		RevokedAt: sql.NullTime{Time: time.Now(), Valid: true},
 	})
 	if err != nil {
-		log.Println("Impossible d'update la db")
+		log.Printf("Impossible d'update la base de donner refreshToken: %s", err)
 		return
 	}
 
