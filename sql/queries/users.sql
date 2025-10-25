@@ -16,7 +16,18 @@ SELECT * FROM users WHERE email = $1;
 SELECT * FROM users WHERE id = $1;
 
 -- name: GetUserFromRefreshToken :one
-SELECT * FROM users Where refresh_token = $1;
+SELECT * FROM users WHERE refresh_token = $1;
+
+-- name: GetUserFromAccessToken :one
+SELECT * FROM users WHERE id = $1;
+
+-- name: UpdateUserInformation :one
+UPDATE users 
+SET updated_at = $2,
+    email = $3, 
+    hashed_password = $4 
+WHERE id = $1 
+RETURNING *;
 
 -- name: DeleteAllUsers :exec
 DELETE FROM users;

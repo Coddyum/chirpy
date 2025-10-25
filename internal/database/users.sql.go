@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -90,12 +91,67 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 	return i, err
 }
 
+const getUserFromAccessToken = `-- name: GetUserFromAccessToken :one
+SELECT id, created_at, updated_at, email, hashed_password, token, refresh_token FROM users WHERE id = $1
+`
+
+func (q *Queries) GetUserFromAccessToken(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserFromAccessToken, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Email,
+		&i.HashedPassword,
+		&i.Token,
+		&i.RefreshToken,
+	)
+	return i, err
+}
+
 const getUserFromRefreshToken = `-- name: GetUserFromRefreshToken :one
-SELECT id, created_at, updated_at, email, hashed_password, token, refresh_token FROM users Where refresh_token = $1
+SELECT id, created_at, updated_at, email, hashed_password, token, refresh_token FROM users WHERE refresh_token = $1
 `
 
 func (q *Queries) GetUserFromRefreshToken(ctx context.Context, refreshToken string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserFromRefreshToken, refreshToken)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Email,
+		&i.HashedPassword,
+		&i.Token,
+		&i.RefreshToken,
+	)
+	return i, err
+}
+
+const updateUserInformation = `-- name: UpdateUserInformation :one
+UPDATE users 
+SET updated_at = $2,
+    email = $3, 
+    hashed_password = $4 
+WHERE id = $1 
+RETURNING id, created_at, updated_at, email, hashed_password, token, refresh_token
+`
+
+type UpdateUserInformationParams struct {
+	ID             uuid.UUID
+	UpdatedAt      time.Time
+	Email          string
+	HashedPassword string
+}
+
+func (q *Queries) UpdateUserInformation(ctx context.Context, arg UpdateUserInformationParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUserInformation,
+		arg.ID,
+		arg.UpdatedAt,
+		arg.Email,
+		arg.HashedPassword,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,

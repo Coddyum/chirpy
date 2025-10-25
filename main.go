@@ -62,6 +62,7 @@ func main() {
 
 	// Users
 	mux.HandleFunc("POST /api/users", apiCfg.CreateUserHandler)
+	mux.HandleFunc("PUT /api/users", apiCfg.UpdateUserHandler)
 	mux.HandleFunc("POST /api/login", apiCfg.LoginHandler)
 
 	// Token
