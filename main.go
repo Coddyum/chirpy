@@ -72,6 +72,7 @@ func main() {
 	mux.HandleFunc("POST /api/chirps", apiCfg.CreateChirps)
 	mux.HandleFunc("GET /api/chirps", apiCfg.HandlerSelectAllChirps)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", apiCfg.HandlerSelectOneChirp)
+	mux.HandleFunc("DELETE /api/chirps/{chirpID}", apiCfg.DeleteChirpsHandler)
 
 	srv.ListenAndServe()
 }

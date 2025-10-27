@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/Coddyum/chirpy/internal/auth"
 	"github.com/Coddyum/chirpy/internal/database"
 	"github.com/Coddyum/chirpy/internal/utils"
-	"github.com/google/uuid"
 )
 
 type BodyUser struct {
@@ -18,11 +16,7 @@ type BodyUser struct {
 }
 
 type UserType struct {
-	ID             uuid.UUID `json:"id"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
-	Email          string    `json:"email"`
-	HashedPassword string    `json:"hashed_password"`
+	Email string `json:"email"`
 }
 
 func (cfg *ApiConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,5 +44,5 @@ func (cfg *ApiConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	utils.WriteJson(w, 201, UserType{ID: user.ID, CreatedAt: user.CreatedAt, UpdatedAt: user.UpdatedAt, Email: user.Email, HashedPassword: user.HashedPassword})
+	utils.WriteJson(w, 201, UserType{Email: user.Email})
 }
