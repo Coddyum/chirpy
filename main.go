@@ -74,5 +74,8 @@ func main() {
 	mux.HandleFunc("GET /api/chirps/{chirpID}", apiCfg.HandlerSelectOneChirp)
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", apiCfg.DeleteChirpsHandler)
 
+	// WebWooks
+	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.UpgradeUserWebHooks)
+
 	srv.ListenAndServe()
 }

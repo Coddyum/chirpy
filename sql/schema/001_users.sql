@@ -6,7 +6,8 @@ CREATE TABLE users (
     email TEXT NOT NULL UNIQUE,
     hashed_password TEXT NOT NULL DEFAULT 'unset',
     token TEXT NOT NULL DEFAULT '',
-    refresh_token TEXT NOT NULL DEFAULT ''
+    refresh_token TEXT NOT NULL DEFAULT '',
+    is_chirpy_red BOOLEAN DEFAULT FALSE
 );
 
 -- +goose Down

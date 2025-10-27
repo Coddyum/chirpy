@@ -73,5 +73,6 @@ func (cfg *ApiConfig) UpdateUserHandler(w http.ResponseWriter, r *http.Request) 
 		Email:        updatedUser.Email,
 		Token:        user.Token,
 		RefreshToken: user.RefreshToken,
+		IsChirpyRed:  user.IsChirpyRed,
 	})
 }

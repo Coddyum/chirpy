@@ -1,0 +1,64 @@
+package handler
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/Coddyum/chirpy/internal/database"
+	"github.com/google/uuid"
+)
+
+type WebhookParams struct {
+	Event string `json:"event"`
+	Data  struct {
+		UserID string `json:"user_id"`
+	} `json:"data"`
+}
+
+func (cfg *ApiConfig) UpgradeUserWebHooks(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	params := WebhookParams{}
+	err := decoder.Decode(&params)
+	if err != nil {
+		log.Printf("Error decoding parameters: %s", err)
+		w.WriteHeader(500)
+		return
+	}
+
+	log.Printf("Payload reçu: %+v", params.Data.UserID)
+
+	if params.Event != "user.upgraded" {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	userID, err := uuid.Parse(params.Data.UserID)
+	if err != nil {
+		log.Printf("Erreur lors du parse du userID: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	user, err := cfg.DB.GetUserById(r.Context(), userID)
+	if err != nil {
+		log.Printf("User introuvable ou irrécupérable %s", err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	UpdateErr := cfg.DB.UpgradesUser(r.Context(), database.UpgradesUserParams{
+		ID:          user.ID,
+		UpdatedAt:   time.Now(),
+		IsChirpyRed: true,
+	})
+	if UpdateErr != nil {
+		log.Printf("Erreur lors de l'update %s", UpdateErr)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
+}

@@ -25,6 +25,7 @@ type User struct {
 	Email        string    `json:"email"`
 	Token        string    `json:"token"`
 	RefreshToken string    `json:"refresh_token"`
+	IsChirpyRed  bool      `json:"is_chirpy_red"`
 }
 
 type Refresh struct {
@@ -98,6 +99,7 @@ func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Email:        user.Email,
 		Token:        createJWT,
 		RefreshToken: newRefreshToken,
+		IsChirpyRed:  user.IsChirpyRed,
 	})
 
 }

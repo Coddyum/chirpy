@@ -16,7 +16,9 @@ type BodyUser struct {
 }
 
 type UserType struct {
-	Email string `json:"email"`
+	UserID      string `json:"id"`
+	Email       string `json:"email"`
+	IsChirpyRed bool   `json:"is_chirpy_red"`
 }
 
 func (cfg *ApiConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,9 +42,9 @@ func (cfg *ApiConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 		Email:          params.Email,
 	})
 	if err != nil {
-		log.Fatal("CreateUser failed")
+		log.Fatalf("CreateUser failed %s", err)
 		return
 	}
 
-	utils.WriteJson(w, 201, UserType{Email: user.Email})
+	utils.WriteJson(w, 201, UserType{Email: user.Email, UserID: user.ID.String(), IsChirpyRed: user.IsChirpyRed})
 }

@@ -29,5 +29,11 @@ SET updated_at = $2,
 WHERE id = $1 
 RETURNING *;
 
+-- name: UpgradesUser :exec
+UPDATE users
+SET updated_at = $2,
+    is_chirpy_red = $3
+WHERE id = $1;
+
 -- name: DeleteAllUsers :exec
 DELETE FROM users;
