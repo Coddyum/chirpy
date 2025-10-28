@@ -99,7 +99,7 @@ func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Email:        user.Email,
 		Token:        createJWT,
 		RefreshToken: newRefreshToken,
-		IsChirpyRed:  user.IsChirpyRed,
+		IsChirpyRed:  user.IsChirpyRed.Bool,
 	})
 
 }

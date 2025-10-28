@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Coddyum/chirpy/internal/database"
 	"github.com/Coddyum/chirpy/internal/utils"
 	"github.com/google/uuid"
 )
 
-type Chrips struct {
+type Chirps struct {
 	Id        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -18,17 +19,38 @@ type Chrips struct {
 }
 
 func (cfg *ApiConfig) HandlerSelectAllChirps(w http.ResponseWriter, r *http.Request) {
-	chrip, err := cfg.DB.SelectAllChirps(r.Context())
-	if err != nil {
-		log.Fatalf("Erreur lors de la récupération de chirp %s", err)
-		return
+	id := r.URL.Query().Get("author_id")
+
+	var chirp []database.Chirp
+	var err error
+
+	if id != "" {
+		authorId, err := uuid.Parse(id)
+		if err != nil {
+			http.Error(w, "Invalid author ID", http.StatusBadRequest)
+			return
+		}
+
+		chirp, err = cfg.DB.SelectChirpByAuthor(r.Context(), uuid.NullUUID{UUID: authorId, Valid: true})
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			http.Error(w, "Chirp not found", http.StatusNotFound)
+			return
+		}
+
+	} else {
+		chirp, err = cfg.DB.SelectAllChirps(r.Context())
+		if err != nil {
+			log.Fatalf("Erreur lors de la récupération de chirp %s", err)
+			return
+		}
 	}
 
-	var data []Chrips
+	var data []Chirps
 
-	for _, c := range chrip {
+	for _, c := range chirp {
 		data = append(data,
-			Chrips{
+			Chirps{
 				Id:        c.ID,
 				CreatedAt: c.CreatedAt,
 				UpdatedAt: c.UpdatedAt,

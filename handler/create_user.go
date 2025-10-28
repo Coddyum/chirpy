@@ -46,5 +46,5 @@ func (cfg *ApiConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	utils.WriteJson(w, 201, UserType{Email: user.Email, UserID: user.ID.String(), IsChirpyRed: user.IsChirpyRed})
+	utils.WriteJson(w, 201, UserType{Email: user.Email, UserID: user.ID.String(), IsChirpyRed: user.IsChirpyRed.Bool})
 }

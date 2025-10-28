@@ -69,7 +69,7 @@ func (cfg *ApiConfig) CreateChirps(w http.ResponseWriter, r *http.Request) {
 		UserID: uuid.NullUUID{UUID: userID, Valid: true},
 	})
 	if err != nil {
-		log.Printf("(Create_Chrips L.72) Impossible de crée le chirp %s", err)
+		log.Printf("(Create_Chirps L.72) Impossible de crée le chirp %s", err)
 		utils.WriteJson(w, 500, errorResponse{Error: "Failed to create chirp"})
 		return
 	}

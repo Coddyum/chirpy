@@ -4,14 +4,20 @@ VALUES ($1, $2)
 RETURNING id, created_at, updated_at, body, user_id;
 
 -- name: SelectAllChirps :many
-SELECT id, created_at, updated_at, body, user_id
+SELECT *
 FROM chirps
 ORDER BY created_at ASC;
 
--- name: SelectOneChrip :one
-SELECT id, created_at, updated_at, body, user_id
+-- name: SelectOneChirp :one
+SELECT *
 FROM chirps
 WHERE id = $1;
+
+-- name: SelectChirpByAuthor :many
+SELECT *
+FROM chirps
+WHERE user_id = $1
+ORDER BY created_at ASC;
 
 -- name: DeleteOneChirp :exec
 DELETE FROM chirps

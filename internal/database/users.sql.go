@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -181,7 +182,7 @@ WHERE id = $1
 type UpgradesUserParams struct {
 	ID          uuid.UUID
 	UpdatedAt   time.Time
-	IsChirpyRed bool
+	IsChirpyRed sql.NullBool
 }
 
 func (q *Queries) UpgradesUser(ctx context.Context, arg UpgradesUserParams) error {

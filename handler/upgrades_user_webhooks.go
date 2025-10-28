@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -39,8 +40,6 @@ func (cfg *ApiConfig) UpgradeUserWebHooks(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	log.Printf("Payload reçu: %+v", params.Data.UserID)
-
 	if params.Event != "user.upgraded" {
 		w.WriteHeader(http.StatusNoContent)
 		return
@@ -63,7 +62,7 @@ func (cfg *ApiConfig) UpgradeUserWebHooks(w http.ResponseWriter, r *http.Request
 	UpdateErr := cfg.DB.UpgradesUser(r.Context(), database.UpgradesUserParams{
 		ID:          user.ID,
 		UpdatedAt:   time.Now(),
-		IsChirpyRed: true,
+		IsChirpyRed: sql.NullBool{Bool: true, Valid: true},
 	})
 	if UpdateErr != nil {
 		log.Printf("Erreur lors de l'update %s", UpdateErr)
@@ -72,5 +71,4 @@ func (cfg *ApiConfig) UpgradeUserWebHooks(w http.ResponseWriter, r *http.Request
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-
 }

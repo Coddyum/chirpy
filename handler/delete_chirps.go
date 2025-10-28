@@ -36,7 +36,7 @@ func (cfg *ApiConfig) DeleteChirpsHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// Récupération du Chirp dans la req et vérifi qu'il existe
-	chirp, err := cfg.DB.SelectOneChrip(r.Context(), chirpID)
+	chirp, err := cfg.DB.SelectOneChirp(r.Context(), chirpID)
 	if err != nil {
 		log.Printf("Le chirp n'existe pas ou est impossible a récupérer %s", err)
 		w.WriteHeader(http.StatusNotFound)

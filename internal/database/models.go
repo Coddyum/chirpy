@@ -36,5 +36,5 @@ type User struct {
 	HashedPassword string
 	Token          string
 	RefreshToken   string
-	IsChirpyRed    bool
+	IsChirpyRed    sql.NullBool
 }
