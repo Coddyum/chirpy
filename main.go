@@ -20,9 +20,10 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Get the db url from .env fils
-	dbURL := os.Getenv("DB_URL")         // db access
-	platform := os.Getenv("PLATFORM")    // type like prod, dev ....
-	JWTSecret := os.Getenv("JWT_SECRET") // JWT Key for check user token
+	dbURL := os.Getenv("DB_URL")            // db access
+	platform := os.Getenv("PLATFORM")       // type like prod, dev ....
+	JWTSecret := os.Getenv("JWT_SECRET")    // JWT Key for check user token
+	POLKA_API_KEY := os.Getenv("POLKA_KEY") // Api key for upgraded user to red chirpy
 
 	// Open the sql db from the url
 	db, err := sql.Open("postgres", dbURL)
@@ -37,6 +38,7 @@ func main() {
 		DB:        dbQueries,
 		Platform:  platform,
 		JWTSecret: JWTSecret,
+		POLKA_KEY: POLKA_API_KEY,
 	}
 
 	// this is for listen http server

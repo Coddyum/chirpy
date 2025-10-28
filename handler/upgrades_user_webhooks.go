@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Coddyum/chirpy/internal/auth"
 	"github.com/Coddyum/chirpy/internal/database"
 	"github.com/google/uuid"
 )
@@ -24,6 +25,17 @@ func (cfg *ApiConfig) UpgradeUserWebHooks(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		log.Printf("Error decoding parameters: %s", err)
 		w.WriteHeader(500)
+		return
+	}
+
+	apiToken, err := auth.GetApiKey(r.Header)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if apiToken != cfg.POLKA_KEY {
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
