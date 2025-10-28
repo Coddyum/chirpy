@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/Coddyum/chirpy/internal/database"
@@ -20,6 +21,7 @@ type Chirps struct {
 
 func (cfg *ApiConfig) HandlerSelectAllChirps(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("author_id")
+	sorting := r.URL.Query().Get("sort")
 
 	var chirp []database.Chirp
 	var err error
@@ -44,6 +46,12 @@ func (cfg *ApiConfig) HandlerSelectAllChirps(w http.ResponseWriter, r *http.Requ
 			log.Fatalf("Erreur lors de la récupération de chirp %s", err)
 			return
 		}
+	}
+
+	if sorting == "desc" {
+		sort.Slice(chirp, func(i, j int) bool {
+			return chirp[i].CreatedAt.After(chirp[j].CreatedAt)
+		})
 	}
 
 	var data []Chirps
